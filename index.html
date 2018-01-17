@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome to Vuetify</title>
+  <title>Ilmohallinta</title>
   <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet" type="text/css">
   <link href="https://unpkg.com/vuetify/dist/vuetify.min.css" rel="stylesheet" type="text/css"></link>
   <link href="styles.css" rel="stylesheet" type="text/css">
@@ -15,18 +15,44 @@
 <body>
   <div id="app">
     <v-app>
-      <h1>{{title}}</h1>
       <main>
         <v-content>
-            <v-progress-circular v-if="loading" indeterminate v-bind:size="50" color="primary"></v-progress-circular>
-          <p v-for="sarja in ilmosarjat">{{sarja.nimi}}: <span v-for="joukkue in sarja.joukkueet">{{joukkue.nimi}} </span></p>
+          <v-container>
+            <h1>{{title}}</h1>
+            <v-card class="ma-2">
+              <v-card-title primary-title>
+                <h2>Ilmoittautuneet</h2>
+              </v-card-title>
+              <v-card-text>
+                <v-progress-circular v-if="loading" indeterminate v-bind:size="50" color="primary"></v-progress-circular>
+                <div v-for="sarja in ilmosarjat" v-if="sarja.joukkueet.length">
+                    <h3>{{sarja.nimi}} <span class="body-1">({{sarja.joukkueet.length}})</span></h3>
+                    <div v-for="joukkue in sarja.joukkueet">{{joukkue.nimi}} </div>
+                </div>
+                <v-btn absolute dark fab bottom right color="pink" v-if="!editor" @click="editor=!editor">
+                  <v-icon>add</v-icon>
+                </v-btn>              
+              </v-card-text>
+            </v-card>      
+            
+            <v-card v-if="editor" class="ma-2">
+              <v-card-title primary-title>
+                <h2>Lisää uusi joukkue</h2>
+              </v-card-title>
+              <v-card-text>
+                <v-text-field label="Nimi" v-model="add_nimi" required></v-text-field>
+                <v-select :items="sarjat" item-text="nimi" item-value="id" label="Sarja" v-model="add_sarja" single-line bottom required></v-select>
+                <v-btn color="primary" @click="adder()" :disabled="add_disabled">Lisää</v-btn>
+                <v-btn color="error" @click="editor=!editor">Peruuta</v-btn>
+              </v-card-text>
+            </v-card>  
+          </v-container>  
         </v-content>
       </main>
     </v-app>
   </div>
 
   
-  <script src="https://unpkg.com/jquery@3.2.1/dist/jquery.js"></script>
   <script src="https://unpkg.com/vue/dist/vue.js"></script>
   <script src="https://unpkg.com/vuetify/dist/vuetify.js"></script>
   <script src="main.js"></script>
