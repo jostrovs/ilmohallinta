@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Vuetify</title>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet" type="text/css">
+  <link href="https://unpkg.com/vuetify/dist/vuetify.min.css" rel="stylesheet" type="text/css"></link>
+  <link href="styles.css" rel="stylesheet" type="text/css">
+  <link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32">
+
+  <script src="https://www.gstatic.com/firebasejs/4.8.2/firebase.js"></script>
+</head>
+<body>
+  <div id="app">
+    <v-app>
+      <h1>{{title}}</h1>
+      <main>
+        <v-content>
+            <v-progress-circular v-if="loading" indeterminate v-bind:size="50" color="primary"></v-progress-circular>
+          <p v-for="sarja in ilmosarjat">{{sarja.nimi}}: <span v-for="joukkue in sarja.joukkueet">{{joukkue.nimi}} </span></p>
+        </v-content>
+      </main>
+    </v-app>
+  </div>
+
+  
+  <script src="https://unpkg.com/jquery@3.2.1/dist/jquery.js"></script>
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/vuetify/dist/vuetify.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
