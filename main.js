@@ -7,6 +7,7 @@ new Vue({
         loading: 0,
         editor: false,
         next_id: 0,
+        updated: "-",
 
         add_nimi: "",
         add_sarja: "",
@@ -51,6 +52,12 @@ new Vue({
             self.loading--;
         });
 
+        self.loading++;
+        this.database.ref('/updated').once('value').then(function(updated) {
+            self.updated = updated.val();
+            self.loading--;
+        });
+
     },
     mounted: function(){
     },  
@@ -81,6 +88,13 @@ new Vue({
                 sarja: this.add_sarja,
             })
             .then(function(){
+                var d = new Date();
+                
+                var dd = d.toLocaleDateString();
+                var tt = d.toLocaleTimeString();
+
+                firebase.database().ref('/updated').set(dd + " klo " + tt);
+
                 self.editor = false;
                 location.reload();
             })
