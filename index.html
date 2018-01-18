@@ -11,6 +11,11 @@
   <link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32">
 
   <script src="https://www.gstatic.com/firebasejs/4.8.2/firebase.js"></script>
+
+  <script src="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.js"></script>
+  <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.css" />  
+
+
 </head>
 <body>
   <div id="app">
@@ -18,7 +23,17 @@
       <main>
         <v-content>
           <v-container>
-            <h1>{{title}}</h1>
+            <h1>{{title}} <span  v-if="signed_in" class="body-1">User: {{user.displayName}} <v-btn small @click="sign_out()">Sign out</v-btn></span></h1>
+
+            <div v-if="!signed_in">
+              <div id="firebaseui-auth-container"></div>
+            </div>
+  
+            <v-snackbar :timeout="5000" v-model="snackbar">
+              {{snackbar_text}}
+              <v-btn flat color="pink" @click.native="snackbar = false">Close</v-btn>
+            </v-snackbar>
+
             <v-card class="ma-2">
               <v-card-title primary-title>
                 <h2>Ilmoittautuneet</h2>
@@ -29,7 +44,7 @@
                     <h3>{{sarja.nimi}} <span class="body-1">({{sarja.joukkueet.length}})</span></h3>
                     <div v-for="joukkue in sarja.joukkueet">{{joukkue.nimi}} </div>
                 </div>
-                <v-btn absolute dark fab bottom right color="pink" v-if="!editor" @click="editor=!editor">
+                <v-btn absolute dark fab bottom right color="pink" v-if="signed_in && !editor" @click="editor=!editor">
                   <v-icon>add</v-icon>
                 </v-btn>              
               </v-card-text>

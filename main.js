@@ -1,67 +1,34 @@
-// Initialize Firebase
-var config = {
-  apiKey: "AIzaSyBkuwgWfzafFfgrHJfzVCNFfOT8J6bsaNc",
-  authDomain: "my-awesome-project-6abd3.firebaseapp.com",
-  databaseURL: "https://my-awesome-project-6abd3.firebaseio.com",
-  projectId: "my-awesome-project-6abd3",
-  storageBucket: "my-awesome-project-6abd3.appspot.com",
-  messagingSenderId: "1052167742236"
-};
-firebase.initializeApp(config);
-var database = firebase.database();
-
-// Auth
-var provider = new firebase.auth.GoogleAuthProvider();
-firebase.auth().signInWithPopup(provider).then(function(result) {
-    // This gives you a Google Access Token. You can use it to access the Google API.
-    var token = result.credential.accessToken;
-    // The signed-in user info.
-    var user = result.user;
-    // ...
-  }).catch(function(error) {
-    // Handle Errors here.
-    var errorCode = error.code;
-    var errorMessage = error.message;
-    // The email of the user's account used.
-    var email = error.email;
-    // The firebase.auth.AuthCredential type that was used.
-    var credential = error.credential;
-    // ...
-  });
-
-Vue.component('vue-hello', {
-    template:` 
-    <p id="hello">jesjes {{greet}}</p>                                                                                         
-    `,
-    props: ['greet'],
-    data: function(){
-        return {
-            greet: this.greet,
-        }
-    },
-    mounted: function(){
-        $("#hello").css("border", "1px solid red");
-    }
-});
-
-
 new Vue({
     el: '#app',
     data: {
         sarjat: [],
         ilmoittautuneet: [],
         title: "Ilmohallinta",
-        loading: 2,
+        loading: 0,
         editor: false,
         next_id: 0,
 
         add_nimi: "",
         add_sarja: "",
+
+        snackbar: false,
+        snackbar_text: "",
+
+        // Firebase jutut
+        database: {},
+        firebaseUi: {},
+        
+        user: {},
+        signed_in: false,
     },
-    beforeCreate(){
+    created(){
         let self = this;
+
+        self.initFirebase();
+        self.initFirebaseUi();
+
         self.loading++;
-        database.ref('/ilmoittautuneet').once('value').then(function(joukkueet) {
+        this.database.ref('/ilmoittautuneet').once('value').then(function(joukkueet) {
             joukkueet.forEach(function(joukkue){
                 let key = parseInt(joukkue.key, 10);
                 if(key >= self.next_id){
@@ -77,7 +44,7 @@ new Vue({
         });
 
         self.loading++;
-        database.ref('/sarjat').once('value').then(function(sarjat) {
+        this.database.ref('/sarjat').once('value').then(function(sarjat) {
             sarjat.forEach(function(sarja){
                 self.sarjat.push(sarja.val());
             });
@@ -85,6 +52,8 @@ new Vue({
         });
 
     },
+    mounted: function(){
+    },  
     computed: {
         ilmosarjat(){
             let ret = [];
@@ -106,12 +75,87 @@ new Vue({
 
     methods: {
         adder(){
+            let self = this;
             firebase.database().ref('ilmoittautuneet/' + this.next_id++).set({
                 nimi: this.add_nimi,
                 sarja: this.add_sarja,
+            })
+            .then(function(){
+                self.editor = false;
+                location.reload();
+            })
+            .catch(function(error){
+                self.snackbar_text = "Tallennus epäonnistui: " + error;
+                self.snackbar = true;
             });           
-            this.editor = false;
-            location.reload();
+        },
+
+        initFirebase(){
+            // Initialize Firebase
+            var config = {
+                apiKey: "AIzaSyBkuwgWfzafFfgrHJfzVCNFfOT8J6bsaNc",
+                authDomain: "my-awesome-project-6abd3.firebaseapp.com",
+                databaseURL: "https://my-awesome-project-6abd3.firebaseio.com",
+                projectId: "my-awesome-project-6abd3",
+                storageBucket: "my-awesome-project-6abd3.appspot.com",
+                messagingSenderId: "1052167742236"
+            };
+            firebase.initializeApp(config);
+            this.database = firebase.database();
+        },
+
+        initFirebaseUi(){
+            let self = this;
+
+            let uiConfig = {
+                signInSuccessUrl: '', //'<url-to-redirect-to-on-success>',
+                signInOptions: [
+                    // Leave the lines as is for the providers you want to offer your users.
+                    firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+                ],
+                // Terms of service url.
+                tosUrl: '<your-tos-url>'
+            };
+          
+            this.firebaseUi = new firebaseui.auth.AuthUI(firebase.auth());
+        
+            // The start method will wait until the DOM is loaded.
+            this.firebaseUi.start('#firebaseui-auth-container', uiConfig);  
+            
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (user) {
+                    
+                    // User is signed in.
+                    var displayName = user.displayName;
+                    var email = user.email;
+                    var emailVerified = user.emailVerified;
+                    var photoURL = user.photoURL;
+                    var uid = user.uid;
+                    var phoneNumber = user.phoneNumber;
+                    var providerData = user.providerData;
+                    user.getIdToken().then(function(accessToken) {
+                        self.user = user;
+                        self.signed_in = true;
+                        
+                        // document.getElementById('sign-in-status').textContent = 'Signed in';
+                        // document.getElementById('sign-in').textContent = 'Sign out';
+                    });
+                } else {
+                    // User is signed out.
+                    self.signed_in = false;
+                    self.user = {};
+                    // document.getElementById('sign-in-status').textContent = 'Signed out';
+                    // document.getElementById('sign-in').textContent = 'Sign in';
+                    // document.getElementById('account-details').textContent = 'null';
+                }
+            }, function(error) {
+                console.log(error);
+            });
+        },
+
+        sign_out(){
+            let self = this;
+            firebase.auth().signOut().then(function(){location.reload()});
         }
     }
 })
