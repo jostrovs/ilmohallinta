@@ -6,7 +6,6 @@ new Vue({
         title: "Ilmohallinta",
         loading: 0,
         editor: false,
-        next_id: 0,
         updated: "-",
 
         add_nimi: "",
@@ -29,14 +28,8 @@ new Vue({
         self.initFirebaseUi();
 
         self.loading++;
-        this.database.ref('/ilmoittautuneet').once('value').then(function(joukkueet) {
+        this.database.ref('/ilmoittautuneet/2019').once('value').then(function(joukkueet) {
             joukkueet.forEach(function(joukkue){
-                let key = parseInt(joukkue.key, 10);
-                if(key >= self.next_id){
-                     self.next_id = key+1;
-                     console.log("Next id asetettu " + self.next_id);
-                }
-                
                 let val = joukkue.val();
                 console.log("Lisätään joukkue " + val.nimi + " sarjaan " + val.sarja);
                 self.ilmoittautuneet.push(val);
@@ -83,7 +76,8 @@ new Vue({
     methods: {
         adder(){
             let self = this;
-            firebase.database().ref('ilmoittautuneet/' + this.next_id++).set({
+
+            firebase.database().ref('ilmoittautuneet/2019').push({
                 nimi: this.add_nimi,
                 sarja: this.add_sarja,
             })
